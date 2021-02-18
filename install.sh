@@ -60,12 +60,12 @@ chmod +x /usr/local/bin/docker-compose
 
 echo "Instalando letsencrypt"
 apt-get -y install letsencrypt
-mkdir $PWD/certs/
+mkdir $PATH_INSTALL/certs/
 
 echo "Configurando proxy"
 docker network create proxynet
-mkdir $PWD/proxy
-cat << EOF > $PWD/proxy/docker-compose.yml
+mkdir $PATH_INSTALL/proxy
+cat << EOF > $PATH_INSTALL/proxy/docker-compose.yml
 version: '3'
 
 services:
@@ -86,22 +86,22 @@ networks:
 
 EOF
 
-cd $PWD/proxy
+cd $PATH_INSTALL/proxy
 docker-compose up -d
 
-mkdir $PWD/proxy/fpms
+mkdir $PATH_INSTALL/proxy/fpms
 fi
 
 echo "Configurando $DIR"
 
-if ! [ -d $PWD/proxy/fpms/$DIR ]; then
+if ! [ -d $PATH_INSTALL/proxy/fpms/$DIR ]; then
 echo "Cloning the repository"
 rm -rf "$PATH_INSTALL/$DIR"
 git clone "$PROYECT" "$PATH_INSTALL/$DIR"
 
-mkdir $PWD/proxy/fpms/$DIR
+mkdir $PATH_INSTALL/proxy/fpms/$DIR
 
-cat << EOF > $PWD/proxy/fpms/$DIR/default
+cat << EOF > $PATH_INSTALL/proxy/fpms/$DIR/default
 # Configuración de PHP para Nginx
 server {
     listen 80 default_server;
@@ -215,40 +215,6 @@ sed -i '/APP_URL=/c\APP_URL=http://${APP_URL_BASE}' .env
 sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=false' .env
 sed -i '/APP_DEBUG=/c\APP_DEBUG=false' .env
 
-#instalar certificado?
-read -p "instalar SSL gratuito? si[s] no[n]: " ssl
-if [ "$ssl" = "s" ]; then
-
-
-    sed -i '/APP_URL=/c\APP_URL=https://${APP_URL_BASE}' .env
-    sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=true' .env
-
-    echo "Configurando certbot"
-    certbot certonly --webroot -w "$PATH_INSTALL/$DIR" -d "$HOST" -d *."$HOST"
-
-    if ! [ -f /etc/letsencrypt/live/$HOST/privkey.pem ]; then
-        rm -rf "$PWD/proxy/fpms/$DIR"
-        rm -rf "$PATH_INSTALL/$DIR"
-
-        if [ $SERVICE_NUMBER = '1' ]; then
-            cd $PWD/proxy
-
-            docker-compose down
-
-            cd $PWD
-            rm -rf "$PWD/proxy"
-        fi
-
-        echo "The ssl certificate could not be generated"
-
-        exit 1
-    fi
-
-    cp /etc/letsencrypt/live/$HOST/privkey.pem $PWD/certs/$HOST.key
-    cp /etc/letsencrypt/live/$HOST/cert.pem $PWD/certs/$HOST.crt
-
-fi
-
 ADMIN_PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 10 ; echo '')
 echo "Configurando archivo para usuario administrador"
 mv "$PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php" "$PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php.bk"
@@ -311,7 +277,7 @@ echo "configurando permisos"
 chmod -R 777 "$PATH_INSTALL/$DIR/storage/" "$PATH_INSTALL/$DIR/bootstrap/" "$PATH_INSTALL/$DIR/vendor/"
 chmod +x $PATH_INSTALL/$DIR/script-update.sh
 
-#Configurar clave ssh
+#CONFIGURAR CLAVE SSH
 if [ "$version" = '3' ] || [ "$version" = '4' ]; then
     read -p "configurar clave SSH para actualización automática? (requiere acceso a https://gitlab.com/profile/keys). si[s] no[n] " ssh
     if [ "$ssh" = "s" ]; then
@@ -329,7 +295,45 @@ if [ "$version" = '3' ] || [ "$version" = '4' ]; then
     fi
 fi
 
-echo "Ruta del proyecto dentro del servidor: $PWD/$DIR"
+#SSL
+read -p "instalar SSL gratuito? si[s] no[n]: " ssl
+if [ "$ssl" = "s" ]; then
+
+    echo "--IMPORTANTE--"
+    echo "verificar si ya posee acceso al facturador en http//:$HOST"
+    echo "--------------"
+    echo "----------Datos que solicitará cerbot (copiar sin usar [ctrl+c])-------------"
+    echo "dominio: $HOST"
+    echo "ruta del servidor: $PATH_INSTALL/$DIR/public"
+    echo ""
+    mkdir $PATH_INSTALL/$DIR/public/.well-known
+    mkdir $PATH_INSTALL/$DIR/public/.well-known/acme-challenge
+
+    certbot certonly --webroot
+
+    echo "Configurando certbot"
+
+    if ! [ -f /etc/letsencrypt/live/$HOST/privkey.pem ]; then
+
+        echo "No se ha generado el certificado gratuito"
+    else
+
+        sed -i '/APP_URL=/c\APP_URL=https://${APP_URL_BASE}' .env
+        sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=true' .env
+
+        cp /etc/letsencrypt/live/$HOST/privkey.pem $PATH_INSTALL/certs/$HOST.key
+        cp /etc/letsencrypt/live/$HOST/cert.pem $PATH_INSTALL/certs/$HOST.crt
+
+        docker-compose exec -T fpm$SERVICE_NUMBER php artisan config:cache
+        docker-compose exec -T fpm$SERVICE_NUMBER php artisan cache:clear
+
+        docker restart proxy_proxy_1
+
+    fi
+
+fi
+
+echo "Ruta del proyecto dentro del servidor: $PATH_INSTALL/$DIR"
 echo "----------------------------------------------"
 echo "URL: $HOST"
 echo "Correo para administrador: admin@$HOST"
@@ -343,6 +347,24 @@ if [ "$version" = '3' ] || [ "$version" = '4' ]; then
     cat $PATH_INSTALL/$DIR/ssh/id_rsa.pub
 fi
 
+KEY=$(cat $PATH_INSTALL/$DIR/ssh/id_rsa.pub)
+
+cat << EOF > $PATH_INSTALL/$DIR.txt
+Ruta del proyecto dentro del servidor: $PATH_INSTALL/$DIR
+----------------------------------------------
+URL: $HOST
+Correo para administrador: admin@$HOST
+Contraseña para administrador: $ADMIN_PASSWORD
+----------------------------------------------
+Acceso remoto a Mysql
+Contraseña para root: $MYSQL_ROOT_PASSWORD
+
+----------------------------------------------
+Clave SSH para añadir en gitlab.com/profile/keys
+$KEY
+
+EOF
+
 else
-echo "La carpeta $PWD/proxy/fpms/$DIR ya existe"
+echo "La carpeta $PATH_INSTALL/proxy/fpms/$DIR ya existe"
 fi

@@ -308,6 +308,7 @@ if [ "$ssl" = "s" ]; then
     echo ""
     mkdir $PATH_INSTALL/$DIR/public/.well-known
     mkdir $PATH_INSTALL/$DIR/public/.well-known/acme-challenge
+    chmod -R 777 $PATH_INSTALL/$DIR/public/
 
     certbot certonly --webroot
 

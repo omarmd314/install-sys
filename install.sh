@@ -299,11 +299,12 @@ fi
 read -p "instalar SSL gratuito? si[s] no[n]: " ssl
 if [ "$ssl" = "s" ]; then
 
+    echo "--------------"
     echo "--IMPORTANTE--"
     echo "verificar si ya posee acceso al facturador en http//:$HOST"
     echo "--------------"
     echo "----------Datos que solicitará cerbot (copiar sin usar [ctrl+c])-------------"
-    echo "dominio: $HOST"
+    echo "dominio: $HOST *.$HOST"
     echo "ruta del servidor: $PATH_INSTALL/$DIR/public"
     echo ""
     mkdir $PATH_INSTALL/$DIR/public/.well-known

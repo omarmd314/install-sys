@@ -143,7 +143,7 @@ services:
             VIRTUAL_HOST: $HOST, *.$HOST
         volumes:
             - ./:/var/www/html
-            - $PWD/fpms/$DIR:/etc/nginx/sites-available
+            - $PWD/proxy/fpms/$DIR:/etc/nginx/sites-available
         restart: always
     fpm$SERVICE_NUMBER:
         image: rash07/php-fpm:1.0

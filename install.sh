@@ -280,7 +280,7 @@ chmod -R 777 "$PATH_INSTALL/$DIR/storage/" "$PATH_INSTALL/$DIR/bootstrap/" "$PAT
 chmod +x $PATH_INSTALL/$DIR/script-update.sh
 
 #CONFIGURAR CLAVE SSH
-if [ "$version" = '3' ] || [ "$version" = '4' ]; then
+if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '4-API' ]; then
     read -p "configurar clave SSH para actualización automática? (requiere acceso a https://gitlab.com/profile/keys). si[s] no[n] " ssh
     if [ "$ssh" = "s" ]; then
 

@@ -297,46 +297,6 @@ if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '4-API' ]; the
     fi
 fi
 
-#SSL
-read -p "instalar SSL gratuito? si[s] no[n]: " ssl
-if [ "$ssl" = "s" ]; then
-
-    echo "--------------"
-    echo "--IMPORTANTE--"
-    echo "verificar si ya posee acceso al facturador en http//:$HOST"
-    echo "--------------"
-    echo "----------Datos que solicitará cerbot (copiar sin usar [ctrl+c])-------------"
-    echo "dominio: $HOST *.$HOST"
-    echo "ruta del servidor: $PATH_INSTALL/$DIR/public"
-    echo ""
-    mkdir $PATH_INSTALL/$DIR/public/.well-known
-    mkdir $PATH_INSTALL/$DIR/public/.well-known/acme-challenge
-    chmod -R 777 $PATH_INSTALL/$DIR/public/
-
-    certbot certonly --webroot
-
-    echo "Configurando certbot"
-
-    if ! [ -f /etc/letsencrypt/live/$HOST/privkey.pem ]; then
-
-        echo "No se ha generado el certificado gratuito"
-    else
-
-        sed -i '/APP_URL=/c\APP_URL=https://${APP_URL_BASE}' .env
-        sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=true' .env
-
-        cp /etc/letsencrypt/live/$HOST/privkey.pem $PATH_INSTALL/certs/$HOST.key
-        cp /etc/letsencrypt/live/$HOST/cert.pem $PATH_INSTALL/certs/$HOST.crt
-
-        docker-compose exec -T fpm$SERVICE_NUMBER php artisan config:cache
-        docker-compose exec -T fpm$SERVICE_NUMBER php artisan cache:clear
-
-        docker restart proxy_proxy_1
-
-    fi
-
-fi
-
 echo "Ruta del proyecto dentro del servidor: $PATH_INSTALL/$DIR"
 echo "----------------------------------------------"
 echo "URL: $HOST"
@@ -347,7 +307,7 @@ echo "Acceso remoto a Mysql"
 echo "Contraseña para root: $MYSQL_ROOT_PASSWORD"
 if [ "$version" = '3' ] || [ "$version" = '4' ]; then
     echo "----------------------------------------------"
-    echo "Clave SSH para añadir en gitlab.com/profile/keys"
+    echo "Clave SSH para añadir en gitlab.com/-/profile/keys"
     cat $PATH_INSTALL/$DIR/ssh/id_rsa.pub
 fi
 
@@ -364,7 +324,7 @@ Acceso remoto a Mysql
 Contraseña para root: $MYSQL_ROOT_PASSWORD
 
 ----------------------------------------------
-Clave SSH para añadir en gitlab.com/profile/keys
+Clave SSH para añadir en gitlab.com/-/profile/keys
 $KEY
 
 EOF

@@ -72,7 +72,7 @@ version: '3'
 
 services:
     proxy:
-        image: jwilder/nginx-proxy
+        image: rash07/nginx-proxy:2.0
         ports:
             - "80:80"
             - "443:443"

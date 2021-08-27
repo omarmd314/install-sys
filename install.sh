@@ -302,11 +302,10 @@ read -p "instalar SSL gratuito? si[s] no[n]: " ssl
 if [ "$ssl" = "s" ]; then
 
     echo "--IMPORTANTE--"
-    echo "verificar si ya posee acceso al facturador en http//:$HOST"
     echo "--------------"
-    echo "----------Datos que solicitará cerbot (copiar sin usar [ctrl+c]-------------"
-    echo "correo: $HOST"
-    echo ""
+    echo "Copiar los TXT sin usar [ctrl+c] ya que cancelará el proceso"
+    echo "Ingresar correo electronico y aceptar las preguntas"
+    echo "--------------"
 
     certbot certonly --manual -d *.$HOST -d $HOST --agree-tos --no-bootstrap --manual-public-ip-logging-ok --preferred-challenges dns-01 --server https://acme-v02.api.letsencrypt.org/directory
 

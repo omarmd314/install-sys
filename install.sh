@@ -321,7 +321,7 @@ if [ "$ssl" = "s" ]; then
         sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=true' .env
 
         cp /etc/letsencrypt/live/$HOST/privkey.pem $PATH_INSTALL/certs/$HOST.key
-        cp /etc/letsencrypt/live/$HOST/cert.pem $PATH_INSTALL/certs/$HOST.crt
+        cp /etc/letsencrypt/live/$HOST/fullchain.pem $PATH_INSTALL/certs/$HOST.crt
 
         docker-compose exec -T fpm$SERVICE_NUMBER php artisan config:cache
         docker-compose exec -T fpm$SERVICE_NUMBER php artisan cache:clear

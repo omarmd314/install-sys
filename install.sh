@@ -272,6 +272,7 @@ docker-compose exec -T fpm$SERVICE_NUMBER php artisan migrate:refresh --seed
 docker-compose exec -T fpm$SERVICE_NUMBER php artisan key:generate
 docker-compose exec -T fpm$SERVICE_NUMBER php artisan storage:link
 docker-compose exec -T fpm$SERVICE_NUMBER git checkout .
+docker-compose exec -T fpm$SERVICE_NUMBER git config --global core.fileMode false
 
 rm $PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php
 mv $PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php.bk $PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php

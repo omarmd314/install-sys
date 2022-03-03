@@ -126,6 +126,7 @@ server {
     location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass fpm$SERVICE_NUMBER:9000;
+        fastcgi_read_timeout 3600;
     }
     error_page 404 /index.php;
     location ~ /\.ht {
@@ -179,6 +180,13 @@ services:
         volumes:
             - ./:/var/www/html
         restart: always
+    supervisor$SERVICE_NUMBER:
+        image: rash07/php7.4-supervisor
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+            - ./supervisor.conf:/etc/supervisor/conf.d/supervisor.conf
+        restart: always
 
 networks:
     default:
@@ -216,6 +224,7 @@ sed -i "/APP_URL_BASE=/c\APP_URL_BASE=$HOST" .env
 sed -i '/APP_URL=/c\APP_URL=http://${APP_URL_BASE}' .env
 sed -i '/FORCE_HTTPS=/c\FORCE_HTTPS=false' .env
 sed -i '/APP_DEBUG=/c\APP_DEBUG=false' .env
+sed -i '/QUEUE_CONNECTION=/c\QUEUE_CONNECTION=database' .env
 
 ADMIN_PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 10 ; echo '')
 echo "Configurando archivo para usuario administrador"
@@ -280,6 +289,13 @@ mv $PATH_INSTALL/$DIR/database/seeds/DatabaseSeeder.php.bk $PATH_INSTALL/$DIR/da
 echo "configurando permisos"
 chmod -R 777 "$PATH_INSTALL/$DIR/storage/" "$PATH_INSTALL/$DIR/bootstrap/" "$PATH_INSTALL/$DIR/vendor/"
 chmod +x $PATH_INSTALL/$DIR/script-update.sh
+
+echo "configurando Supervisor"
+docker-compose exec -T supervisor$SERVICE_NUMBER service supervisor start
+docker-compose exec -T supervisor$SERVICE_NUMBER supervisorctl reread
+docker-compose exec -T supervisor$SERVICE_NUMBER supervisorctl update
+docker-compose exec -T supervisor$SERVICE_NUMBER supervisorctl start all
+
 
 #CONFIGURAR CLAVE SSH
 if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '4-API' ]; then

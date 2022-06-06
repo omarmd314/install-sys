@@ -300,7 +300,7 @@ docker-compose exec -T supervisor$SERVICE_NUMBER supervisorctl start all
 
 
 #CONFIGURAR CLAVE SSH
-if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '4-API' ]; then
+if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '4-API' ] || [ "$version" = '5' ]; then
     read -p "configurar clave SSH para actualización automática? (requiere acceso a https://gitlab.com/profile/keys). si[s] no[n] " ssh
     if [ "$ssh" = "s" ]; then
 

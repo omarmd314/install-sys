@@ -361,7 +361,7 @@ echo "Contraseña para administrador: $ADMIN_PASSWORD"
 echo "----------------------------------------------"
 echo "Acceso remoto a Mysql"
 echo "Contraseña para root: $MYSQL_ROOT_PASSWORD"
-if [ "$version" = '3' ] || [ "$version" = '4' ]; then
+if [ "$version" = '3' ] || [ "$version" = '4' ] || [ "$version" = '5' ]; then
     echo "----------------------------------------------"
     echo "Clave SSH para añadir en gitlab.com/-/profile/keys"
     cat $PATH_INSTALL/$DIR/ssh/id_rsa.pub

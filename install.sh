@@ -103,7 +103,7 @@ echo "Cloning the repository"
 rm -rf "$PATH_INSTALL/$DIR"
 git clone "$PROYECT" "$PATH_INSTALL/$DIR"
 
-if [ "$version" = '5' ];
+if [ "$version" = '5' ]; then
 cp $PATH_INSTALL/$DIR/supervisor.conf.example $PATH_INSTALL/$DIR/supervisor.conf
 fi
 

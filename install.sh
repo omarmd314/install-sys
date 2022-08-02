@@ -44,7 +44,7 @@ MYSQL_ROOT_PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 20 ; echo '
 if [ $SERVICE_NUMBER = '1' ]; then
 echo "Actualizando sistema"
 apt-get -y update
-apt-get -y upgrade
+#apt-get -y upgrade
 
 echo "Instalando git"
 apt-get -y install git-core
@@ -102,6 +102,10 @@ if ! [ -d $PATH_INSTALL/proxy/fpms/$DIR ]; then
 echo "Cloning the repository"
 rm -rf "$PATH_INSTALL/$DIR"
 git clone "$PROYECT" "$PATH_INSTALL/$DIR"
+
+if [ "$version" = '5' ];
+cp $PATH_INSTALL/$DIR/supervisor.conf.example $PATH_INSTALL/$DIR/supervisor.conf
+fi
 
 mkdir $PATH_INSTALL/proxy/fpms/$DIR
 

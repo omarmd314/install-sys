@@ -130,9 +130,14 @@ server {
         try_files \$uri \$uri/ /index.php\$is_args\$args;
     }
     location ~ \.php\$ {
+        internal;
         include snippets/fastcgi-php.conf;
         fastcgi_pass fpm$SERVICE_NUMBER:9000;
         fastcgi_read_timeout 3600;
+    }
+    location ~ /storage/.*\.(php|html)$ {
+        deny all;
+        return 403;
     }
     error_page 404 /index.php;
     location ~ /\.ht {

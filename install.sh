@@ -24,7 +24,7 @@ elif [ "$version" = '4' ]; then
 elif [ "$version" = '4-API' ]; then
     PROYECT='https://gitlab.com/facturaloperu/facturador/pro4-apirest.git'
 elif [ "$version" = '5' ]; then
-    PROYECT='https://gitlab.com/facturaloperu/facturador/pro5.git'
+    PROYECT='https://gitlab.buho.la/facturaloperu/facturador/pro-5.git'
 else
     echo no ha ingresado una version correcta del facturador
     exit 1
